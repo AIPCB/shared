@@ -1,3 +1,3 @@
-module github.com/AIPC/shared
+module github.com/AIPCB/shared
 
 go 1.24.2
