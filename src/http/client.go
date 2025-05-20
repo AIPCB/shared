@@ -39,7 +39,7 @@ func (c *Client) DoRequest(ctx context.Context, method, path string, body any, r
 
 	relPath, err := url.Parse(path)
 	if err != nil {
-		return fmt.Errorf("invalid path: %w", err)
+		return fmt.Errorf("invalid path (%s): %w", path, err)
 	}
 
 	fullURL := baseURL.ResolveReference(relPath)
