@@ -32,19 +32,12 @@ func (c *Client) DoRequest(ctx context.Context, method, path string, body any, r
 		bodyReader = bytes.NewBuffer(buf)
 	}
 
-	baseURL, err := url.Parse(c.BaseURL)
+	fullURLStr, err := url.JoinPath(c.BaseURL, path)
 	if err != nil {
-		return fmt.Errorf("invalid base URL: %w", err)
+		return fmt.Errorf("failed to join URL paths: %w", err)
 	}
 
-	relPath, err := url.Parse(path)
-	if err != nil {
-		return fmt.Errorf("invalid path (%s): %w", path, err)
-	}
-
-	fullURL := baseURL.ResolveReference(relPath)
-
-	req, err := http.NewRequestWithContext(ctx, method, fullURL.String(), bodyReader)
+	req, err := http.NewRequestWithContext(ctx, method, fullURLStr, bodyReader)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
