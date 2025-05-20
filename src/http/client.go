@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
+	"strings"
 )
 
 type Client struct {
@@ -32,14 +32,14 @@ func (c *Client) DoRequest(ctx context.Context, method, path string, body any, r
 		bodyReader = bytes.NewBuffer(buf)
 	}
 
-	url, err := url.Parse(c.BaseURL + path)
-	if err != nil {
-		return fmt.Errorf("failed to parse URL: %w", err)
+	baseURL := c.BaseURL
+	if !strings.HasSuffix(baseURL, "/") && !strings.HasPrefix(path, "/") {
+		baseURL += "/"
 	}
 
-	resolvedURL := url.ResolveReference(url)
+	fullURL := baseURL + path
 
-	req, err := http.NewRequestWithContext(ctx, method, resolvedURL.Path, bodyReader)
+	req, err := http.NewRequestWithContext(ctx, method, fullURL, bodyReader)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
