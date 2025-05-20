@@ -11,13 +11,18 @@ import (
 )
 
 type Client struct {
-	BaseURL    string
+	baseURL    *url.URL
 	HTTPClient *http.Client
 }
 
 func New(baseURL string) *Client {
+	parsedURL, err := url.Parse(baseURL)
+	if err != nil {
+		fmt.Printf("Invalid base URL: %v", err)
+	}
+
 	return &Client{
-		BaseURL:    baseURL,
+		baseURL:    parsedURL,
 		HTTPClient: http.DefaultClient,
 	}
 }
@@ -32,14 +37,14 @@ func (c *Client) DoRequest(ctx context.Context, method, path string, body any, r
 		bodyReader = bytes.NewBuffer(buf)
 	}
 
-	url, err := url.Parse(c.BaseURL + path)
+	relPath, err := url.Parse(path)
 	if err != nil {
-		return fmt.Errorf("failed to parse URL: %w", err)
+		return fmt.Errorf("invalid path: %w", err)
 	}
 
-	resolvedURL := url.ResolveReference(url)
+	fullURL := c.baseURL.ResolveReference(relPath)
 
-	req, err := http.NewRequestWithContext(ctx, method, resolvedURL.Path, bodyReader)
+	req, err := http.NewRequestWithContext(ctx, method, fullURL.String(), bodyReader)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
